@@ -33,6 +33,7 @@ import { NukeExecution } from "./NukeExecution";
 import { PortExecution } from "./PortExecution";
 import { SAMLauncherExecution } from "./SAMLauncherExecution";
 import { SubmarineExecution } from "./SubmarineExecution";
+import { TradeShipExecution } from "./TradeShipExecution";
 import { WarshipExecution } from "./WarshipExecution";
 
 export class ConstructionExecution implements Execution {
@@ -229,6 +230,20 @@ export class ConstructionExecution implements Execution {
           ),
         );
         break;
+      case UnitType.TradeShip: {
+        const sourcePort = player
+          .units(UnitType.Port)
+          .find((port) => port.tile() === this.tile);
+        const destinationPort = sourcePort
+          ? player.tradingPorts(sourcePort)[0]
+          : undefined;
+        if (sourcePort && destinationPort) {
+          this.mg.addExecution(
+            new TradeShipExecution(player, sourcePort, destinationPort),
+          );
+        }
+        break;
+      }
       case UnitType.MissileSilo:
         this.mg.addExecution(
           new MissileSiloExecution(

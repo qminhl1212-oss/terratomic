@@ -25,7 +25,10 @@ export const AVAILABLE_STATS = [
   "Research Lab",
   "Factory",
   "Port",
+  "Destroyer",
   "Cruiser",
+  "Aegis Destroyer",
+  "Aircraft Carrier",
   "Missile Silo",
   "SAM Launcher",
   "Air Field",
@@ -152,14 +155,20 @@ export function computeStatValue(
       const count = p.unitsOwned(t);
       return { sortValue: count, displayPrimary: String(count) };
     }
+    case "Destroyer":
     case "Cruiser":
+    case "Aegis Destroyer":
+    case "Aircraft Carrier":
     case "Missile Silo":
     case "SAM Launcher":
     case "Air Field":
     case "Fighter Jet":
     case "Defense Post": {
       const map: Record<string, UnitType> = {
+        Destroyer: UnitType.Warship,
         Cruiser: UnitType.Warship,
+        "Aegis Destroyer": UnitType.Warship,
+        "Aircraft Carrier": UnitType.Warship,
         "Missile Silo": UnitType.MissileSilo,
         "SAM Launcher": UnitType.SAMLauncher,
         "Air Field": UnitType.Airfield,
@@ -167,7 +176,18 @@ export function computeStatValue(
         "Defense Post": UnitType.DefensePost,
       };
       const t = map[label];
-      const count = p.units(t).length;
+      const ships = t === UnitType.Warship ? p.units(UnitType.Warship) : [];
+      const shipLevelByLabel: Record<string, number> = {
+        Destroyer: 1,
+        Cruiser: 2,
+        "Aegis Destroyer": 3,
+        "Aircraft Carrier": 4,
+      };
+      const count =
+        t === UnitType.Warship
+          ? ships.filter((ship) => ship.level() === shipLevelByLabel[label])
+              .length
+          : p.units(t).length;
       return { sortValue: count, displayPrimary: String(count) };
     }
     // Tech overview

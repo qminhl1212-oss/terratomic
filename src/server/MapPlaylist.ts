@@ -20,6 +20,7 @@ import { logger } from "./Logger";
 const log = logger.child({});
 
 const config = getServerConfigFromServer();
+const renderFree = process.env.RENDER_FREE === "true";
 
 // How many times each map should appear in the playlist.
 // Note: The Partial should eventually be removed for better type safety.
@@ -78,11 +79,12 @@ export class MapPlaylist {
     // Alternate between normal and fast mode (50/50)
     const isFastMode = this.fastModeCounter % 2 === 1;
     this.fastModeCounter++;
+    const maxPlayers = config.lobbyMaxPlayers(map, mode, playerTeams);
 
     // Create the default public game config (from your GameManager)
     return {
       gameMap: map,
-      maxPlayers: config.lobbyMaxPlayers(map, mode, playerTeams),
+      maxPlayers: renderFree ? Math.min(maxPlayers, 16) : maxPlayers,
       gameType: GameType.Public,
       difficulty: Difficulty.Medium,
       infiniteGold: false,
@@ -91,7 +93,7 @@ export class MapPlaylist {
       disableNPCs: mode === GameMode.Team,
       gameMode: mode,
       playerTeams,
-      bots: 400,
+      bots: renderFree ? 80 : 400,
       peaceTimerDurationMinutes: PeaceTimerDuration.None,
       startingGold: 0,
       goldMultiplier: 1,

@@ -115,7 +115,7 @@ export const TECHS: Readonly<Record<string, TechDefinition>> = Object.freeze({
       name: "Fleet Modernization",
       shortDescription: "Aegis, Tactical Subs",
       description:
-        "Advanced naval systems and fleet integration. Unlocks Aegis Warships (+20% health to 1,500, +25.9% minimum damage to 340, +17.7% maximum damage to 465) and Tactical Submarines (+25% health to 1,250, +35% minimum damage to 270, +21.5% maximum damage to 395).",
+        "Advanced naval systems and fleet integration. Unlocks Aegis Destroyers (+20% health to 1,500, +25.9% minimum damage to 340, +17.7% maximum damage to 465) and Tactical Submarines (+25% health to 1,250, +35% minimum damage to 270, +21.5% maximum damage to 395).",
     },
     effects: {
       onComplete: (player) => {
@@ -151,14 +151,17 @@ export const TECHS: Readonly<Record<string, TechDefinition>> = Object.freeze({
   [RESEARCH_TECH_IDS.SEA_TBD_LEVEL4]: {
     meta: {
       name: "Strategic Deterrent",
-      shortDescription: "Nuclear Sub",
+      shortDescription: "Aircraft Carriers, Nuclear Subs",
       description:
-        "Ballistic missile submarine programs for strategic deterrence. Unlocks Nuclear Submarines (enables submarines to launch nuclear weapons while remaining submerged and undetected, providing second-strike capability).",
+        "Build nuclear submarines for second-strike capability and aircraft carriers for mobile air power. Carriers launch and support fighter wings, and their integrated fleet air defenses cover a wider area.",
     },
     effects: {
       onComplete: (player) => {
         if (!player.hasUpgrade?.(UpgradeType.NuclearSubmarineResearch)) {
           player.addUpgrade?.(UpgradeType.NuclearSubmarineResearch);
+        }
+        if (!player.hasUpgrade?.(UpgradeType.WarshipLevel4)) {
+          player.addUpgrade?.(UpgradeType.WarshipLevel4);
         }
       },
     },

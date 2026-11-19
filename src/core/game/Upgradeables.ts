@@ -53,7 +53,7 @@ export function isUpgradeableUnit(type: UnitType): boolean {
   return UPGRADEABLE_UNITS.has(type);
 }
 
-const MAX_STACK_COUNT = 25;
+const MAX_STACK_COUNT = 50;
 
 // Maximum TECH upgrade level for structures (SAM, Airfield)
 // This is NOT the stack count - it's the quality tier from research.
@@ -68,18 +68,20 @@ export function maxStackCount(type: UnitType): number {
   return isStackableStructure(type) ? MAX_STACK_COUNT : 1;
 }
 
-// Legacy function - returns max stack count (25 for all stackable structures)
+// Legacy function - returns max stack count (50 for all stackable structures)
 export function maxStructureLevel(type: UnitType): number {
   return isStackableStructure(type) ? MAX_STACK_COUNT : 1;
 }
 
 // Return maximum upgrade level for upgradeable combat units.
-// Warship, Submarine & Bomber: 3 levels. Fighter Jet: 4 levels. Non-upgradeable units: 1.
+// Warship: 4 levels. Submarine & Bomber: 3 levels. Fighter Jet: 4 levels.
+// Non-upgradeable units: 1.
 export function maxUnitLevel(type: UnitType): number {
   switch (type) {
     case UnitType.FighterJet:
       return 4;
     case UnitType.Warship:
+      return 4;
     case UnitType.Submarine:
     case UnitType.Artillery:
     case UnitType.Bomber:
@@ -122,6 +124,8 @@ export function playerMaxUnitLevel(player: HasUpgrade, type: UnitType): number {
   }
 
   if (type === UnitType.Warship) {
+    if (player.hasUpgrade(UpgradeType.WarshipLevel4))
+      return Math.min(4, globalMax);
     if (player.hasUpgrade(UpgradeType.WarshipLevel3))
       return Math.min(3, globalMax);
     if (player.hasUpgrade(UpgradeType.WarshipLevel2))

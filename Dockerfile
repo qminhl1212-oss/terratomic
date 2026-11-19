@@ -46,6 +46,8 @@ RUN npm ci --omit=dev
 # Final image
 FROM base
 
+EXPOSE 10000
+
 RUN apt-get update && apt-get install -y \
     nginx \
     supervisor \

@@ -19,6 +19,7 @@ import portIcon from "../../../../resources/images/PortIcon.svg";
 import samlauncherIcon from "../../../../resources/images/SamLauncherIconWhite.svg";
 import shieldIcon from "../../../../resources/images/ShieldIconWhite.svg";
 import submarineIcon from "../../../../resources/images/submarine.svg";
+import tradeShipIcon from "../../../../resources/images/TradeShipIcon.svg";
 import { translateText } from "../../../client/Utils";
 import { EventBus } from "../../../core/EventBus";
 import {
@@ -27,6 +28,7 @@ import {
 } from "../../../core/game/Costs";
 import { Gold, UnitType, UpgradeType } from "../../../core/game/Game";
 import { GameView } from "../../../core/game/GameView";
+import { MAX_TRADE_SHIPS } from "../../../core/game/UnitLimits";
 import {
   isStackableStructure,
   isTechUpgradeableStructure,
@@ -91,6 +93,12 @@ const buildTable: BuildItemDisplay[][] = [
       icon: submarineIcon,
       description: "build_menu.desc.submarine",
       key: "unit_type.submarine",
+      countable: true,
+    },
+    {
+      unitType: UnitType.TradeShip,
+      icon: tradeShipIcon,
+      key: "unit_type.trade_ship",
       countable: true,
     },
     {
@@ -273,6 +281,7 @@ export class BuildMenu extends LitElement {
       buildFighterJet: "Digit8",
       buildWarship: "Digit9",
       buildSubmarine: "Digit0",
+      buildTradeShip: "KeyT",
       buildArtillery: "Digit4",
       buildCity: "KeyY",
       buildPort: "KeyU",
@@ -294,6 +303,7 @@ export class BuildMenu extends LitElement {
       [keybinds.buildFighterJet]: UnitType.FighterJet,
       [keybinds.buildWarship]: UnitType.Warship,
       [keybinds.buildSubmarine]: UnitType.Submarine,
+      [keybinds.buildTradeShip]: UnitType.TradeShip,
       [keybinds.buildArtillery]: UnitType.Artillery,
       [keybinds.buildCity]: UnitType.City,
       [keybinds.buildPort]: UnitType.Port,
@@ -532,8 +542,17 @@ export class BuildMenu extends LitElement {
       case UnitType.Submarine:
       case UnitType.Warship:
         return player.unitsOwned(UnitType.Port) > 0;
+      case UnitType.TradeShip:
+        return (
+          player.unitsOwned(UnitType.TradeShip) < MAX_TRADE_SHIPS &&
+          player.unitsOwned(UnitType.Port) > 0
+        );
       case UnitType.FighterJet:
-        return player.unitsOwned(UnitType.Airfield) > 0;
+        return (
+          player.unitsOwned(UnitType.Airfield) > 0 ||
+          (player.units(UnitType.Warship).some((ship) => ship.level() >= 4) &&
+            player.hasUpgrade(UpgradeType.WarshipLevel4))
+        );
       case UnitType.AtomBomb:
         return (
           player.unitsOwned(UnitType.MissileSilo) > 0 ||
@@ -676,11 +695,13 @@ export class BuildMenu extends LitElement {
       if (unitType === UnitType.Warship) {
         switch (level) {
           case 1:
-            return baseName; // "Warship"
+            return "Destroyer";
           case 2:
             return "Cruiser";
           case 3:
-            return "Aegis Warship";
+            return "Aegis Destroyer";
+          case 4:
+            return "Aircraft Carrier";
           default:
             return baseName;
         }

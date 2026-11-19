@@ -38,6 +38,7 @@ import {
 // PIXI unit icons
 import bomberSprite from "../../../../proprietary/images/bomberv3.png";
 import tradeShipIcon from "../../../../proprietary/images/tradeship.png";
+import aircraftCarrierIcon from "../../../../resources/images/AircraftCarrierIcon.svg";
 import warshipIcon from "../../../../resources/images/BattleshipIconWhite.svg";
 import fighterJetIcon from "../../../../resources/images/FighterJetIcon.svg";
 import submarineIcon from "../../../../resources/images/submarine.svg";
@@ -176,6 +177,7 @@ export class UnitLayer implements Layer {
 
   // Icon images for PIXI units
   private warshipIconImage: HTMLImageElement | null = null;
+  private aircraftCarrierIconImage: HTMLImageElement | null = null;
   private submarineIconImage: HTMLImageElement | null = null;
   private fighterJetIconImage: HTMLImageElement | null = null;
   private bomberIconImage: HTMLImageElement | null = null;
@@ -208,6 +210,13 @@ export class UnitLayer implements Layer {
     warshipImg.src = warshipIcon;
     warshipImg.onload = () => {
       this.warshipIconImage = warshipImg;
+      this.clearTextureCache(UnitType.Warship);
+    };
+
+    const carrierImg = new Image();
+    carrierImg.src = aircraftCarrierIcon;
+    carrierImg.onload = () => {
+      this.aircraftCarrierIconImage = carrierImg;
       this.clearTextureCache(UnitType.Warship);
     };
 
@@ -291,10 +300,15 @@ export class UnitLayer implements Layer {
     return (s / ICON_GROW_ZOOM_THRESHOLD / ICON_TEXTURE_QUALITY) * SIZE_SCALE;
   }
 
-  private getIconImage(unitType: UnitType): HTMLImageElement | null {
+  private getIconImage(
+    unitType: UnitType,
+    level: number = 1,
+  ): HTMLImageElement | null {
     switch (unitType) {
       case UnitType.Warship:
-        return this.warshipIconImage;
+        return level >= 4
+          ? (this.aircraftCarrierIconImage ?? this.warshipIconImage)
+          : this.warshipIconImage;
       case UnitType.Submarine:
         return this.submarineIconImage;
       case UnitType.FighterJet:
@@ -334,7 +348,7 @@ export class UnitLayer implements Layer {
       return cache.get(cacheKey)!;
     }
 
-    const iconImage = this.getIconImage(unitType);
+    const iconImage = this.getIconImage(unitType, level);
     // If icon not loaded yet, return empty texture and don't cache
     // It will be recreated once the icon loads
     if (!iconImage || !iconImage.complete) {
@@ -941,8 +955,9 @@ export class UnitLayer implements Layer {
     if (!this.pixiRenderer) return;
 
     const metrics = PerformanceMetrics.getInstance();
-    const unitCounts = new Map<UnitType, number>();
-    const renderTimes = new Map<UnitType, number>();
+    const measureUnits = metrics.enabled;
+    const unitCounts = measureUnits ? new Map<UnitType, number>() : null;
+    const renderTimes = measureUnits ? new Map<UnitType, number>() : null;
 
     // Get viewport bounds for visibility checking
     const canvasWidth = this.pixiRenderer.canvas.width;
@@ -950,12 +965,12 @@ export class UnitLayer implements Layer {
 
     // Update all PIXI sprite positions and states
     for (const render of this.pixiRenders) {
-      const startTime = metrics.enabled ? performance.now() : 0;
+      const startTime = measureUnits ? performance.now() : 0;
       this.updatePixiSpritePosition(render);
-      if (metrics.enabled) {
+      if (measureUnits) {
         const duration = performance.now() - startTime;
-        const currentTime = renderTimes.get(render.unit.type()) ?? 0;
-        renderTimes.set(render.unit.type(), currentTime + duration);
+        const currentTime = renderTimes!.get(render.unit.type()) ?? 0;
+        renderTimes!.set(render.unit.type(), currentTime + duration);
 
         // Track visible count - check if sprite is actually in viewport bounds
         if (render.pixiSprite.visible) {
@@ -968,19 +983,19 @@ export class UnitLayer implements Layer {
             bounds.y <= canvasHeight;
 
           if (isInViewport) {
-            const count = unitCounts.get(render.unit.type()) ?? 0;
-            unitCounts.set(render.unit.type(), count + 1);
+            const count = unitCounts!.get(render.unit.type()) ?? 0;
+            unitCounts!.set(render.unit.type(), count + 1);
           }
         }
       }
     }
 
     // Record accumulated render times and visible counts
-    if (metrics.enabled) {
-      renderTimes.forEach((time, unitType) => {
+    if (measureUnits) {
+      renderTimes!.forEach((time, unitType) => {
         metrics.recordUnitRenderTime(unitType, time);
       });
-      unitCounts.forEach((count, unitType) => {
+      unitCounts!.forEach((count, unitType) => {
         metrics.recordUnitVisible(unitType, count);
       });
     }

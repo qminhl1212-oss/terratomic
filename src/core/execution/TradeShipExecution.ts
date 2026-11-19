@@ -8,6 +8,7 @@ import {
   UnitType,
 } from "../game/Game";
 import { TileRef } from "../game/GameMap";
+import { MAX_TRADE_SHIPS } from "../game/UnitLimits";
 import { PathFindResultType } from "../pathfinding/AStar";
 import { PathFinder } from "../pathfinding/PathFinding";
 import { tradeIncomeModifiers } from "../tech/TechEffects";
@@ -48,6 +49,10 @@ export class TradeShipExecution implements Execution {
 
   tick(ticks: number): void {
     if (this.tradeShip === undefined) {
+      if (this.origOwner.unitsOwned(UnitType.TradeShip) >= MAX_TRADE_SHIPS) {
+        this.active = false;
+        return;
+      }
       const spawn = this.origOwner.canBuild(
         UnitType.TradeShip,
         this.srcPort.tile(),

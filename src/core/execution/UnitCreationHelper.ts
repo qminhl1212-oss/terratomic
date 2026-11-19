@@ -455,7 +455,11 @@ export class UnitCreationHelper {
       if (type === UnitType.Warship || type === UnitType.Submarine) {
         baseCount = this.player.units(UnitType.Port).length;
       } else if (type === UnitType.FighterJet) {
-        baseCount = this.player.units(UnitType.Airfield).length;
+        baseCount =
+          this.player.units(UnitType.Airfield).length +
+          this.player
+            .units(UnitType.Warship)
+            .filter((ship) => ship.level() >= 4).length;
       } else {
         // Artillery
         baseCount = this.player.units(UnitType.Factory).length;
@@ -555,9 +559,13 @@ export class UnitCreationHelper {
         }
       } else if (type === UnitType.FighterJet) {
         const airfields = this.player.units(UnitType.Airfield);
-        if (airfields.length > 0) {
-          const airfield = this.random.randElement(airfields);
-          tile = airfield.tile(); // FighterJets spawn at airfield
+        const carrierDecks = this.player
+          .units(UnitType.Warship)
+          .filter((ship) => ship.level() >= 4);
+        const launchBases = [...airfields, ...carrierDecks];
+        if (launchBases.length > 0) {
+          const launchBase = this.random.randElement(launchBases);
+          tile = launchBase.tile();
         } else {
           tile = null;
         }

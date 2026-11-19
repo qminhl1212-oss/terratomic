@@ -145,7 +145,7 @@ export const FIGHTER_UPGRADES: readonly FighterLevelData[] = [
 ] as const;
 
 // ============================================================================
-// WARSHIP UPGRADES (3 levels)
+// WARSHIP UPGRADES (4 levels)
 // Base cost: 500,000
 // ============================================================================
 
@@ -173,6 +173,14 @@ export const WARSHIP_UPGRADES: readonly WarshipLevelData[] = [
     maxHealth: 1500,
     damageMin: 340,
     damageMax: 465,
+  },
+  // Level 4: Aircraft carrier and integrated air-defense group
+  {
+    cost: 1_200_000n,
+    maintenance: 0n,
+    maxHealth: 2000,
+    damageMin: 400,
+    damageMax: 550,
   },
 ] as const;
 

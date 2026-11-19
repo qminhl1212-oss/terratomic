@@ -55,6 +55,7 @@ import {
   canBuildTransportShip,
 } from "./TransportShipUtils";
 import { UnitImpl } from "./UnitImpl";
+import { MAX_TRADE_SHIPS } from "./UnitLimits";
 import { playerMaxUnitLevel } from "./Upgradeables";
 
 interface Target {
@@ -414,6 +415,7 @@ export class PlayerImpl implements Player {
         break;
       case UpgradeType.WarshipLevel2:
       case UpgradeType.WarshipLevel3:
+      case UpgradeType.WarshipLevel4:
         unitTypes.push(UnitType.Warship);
         break;
       case UpgradeType.SubmarineLevel2:
@@ -1507,6 +1509,12 @@ export class PlayerImpl implements Player {
     if (!this.isAlive() || this.gold() < cost) {
       return false;
     }
+    if (
+      unitType === UnitType.TradeShip &&
+      this.unitsOwned(UnitType.TradeShip) >= MAX_TRADE_SHIPS
+    ) {
+      return false;
+    }
     switch (unitType) {
       case UnitType.MIRV:
         if (!this.mg.hasOwner(targetTile)) {
@@ -1724,7 +1732,10 @@ export class PlayerImpl implements Player {
   }
 
   fighterJetSpawn(tile: TileRef): TileRef | false {
-    const spawns = this.units(UnitType.Airfield).sort(
+    const carrierDecks = this.units(UnitType.Warship).filter(
+      (ship) => ship.level() >= 4,
+    );
+    const spawns = [...this.units(UnitType.Airfield), ...carrierDecks].sort(
       (a, b) =>
         this.mg.manhattanDist(a.tile(), tile) -
         this.mg.manhattanDist(b.tile(), tile),

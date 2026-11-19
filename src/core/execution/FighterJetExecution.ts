@@ -76,9 +76,12 @@ export class FighterJetExecution implements Execution {
       return;
     }
 
-    const hasAirfield =
-      this.fighterJet.owner().units(UnitType.Airfield).length > 0;
-    if (hasAirfield) {
+    const owner = this.fighterJet.owner();
+    const hasAirfield = owner.units(UnitType.Airfield).length > 0;
+    const hasCarrier = owner
+      .units(UnitType.Warship)
+      .some((ship) => ship.level() >= 4);
+    if (hasAirfield || hasCarrier) {
       this.fighterJet.modifyHealth(this.mg.config().fighterJetHealingAmount());
     }
 

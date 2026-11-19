@@ -3,15 +3,16 @@ import artillerySprite from "../../../proprietary/images/artillery-battery.png";
 import bomberSprite from "../../../proprietary/images/bomberv3.png";
 import atomBombSprite from "../../../resources/sprites/atombomb.png";
 import cargoPlaneSprite from "../../../resources/sprites/cargoplane.png";
+import carrierSprite from "../../../resources/sprites/carrier.svg";
 import fighterJetSprite from "../../../resources/sprites/fighterJet.png";
 import hydrogenBombSprite from "../../../resources/sprites/hydrogenbomb.png";
 import mirvSprite from "../../../resources/sprites/mirv2.png";
 import ParatrooperSprite from "../../../resources/sprites/paratrooper.png";
 import samMissileSprite from "../../../resources/sprites/samMissile.png";
-import submarineSprite from "../../../resources/sprites/submarine.png";
-import tradeShipSprite from "../../../resources/sprites/tradeship.png";
-import transportShipSprite from "../../../resources/sprites/transportship.png";
-import warshipSprite from "../../../resources/sprites/warship.png";
+import submarineSprite from "../../../resources/sprites/submarine.svg";
+import tradeShipSprite from "../../../resources/sprites/tradeship.svg";
+import transportShipSprite from "../../../resources/sprites/transportship.svg";
+import warshipSprite from "../../../resources/sprites/warship.svg";
 import { Theme } from "../../core/configuration/Config";
 import { UnitType } from "../../core/game/Game";
 import { UnitView } from "../../core/game/GameView";
@@ -33,6 +34,7 @@ const SPRITE_CONFIG: Partial<Record<UnitType, string>> = {
 };
 
 const spriteMap: Map<UnitType, ImageBitmap> = new Map();
+let carrierBitmap: ImageBitmap | null = null;
 
 // preload all images
 export const loadAllSprites = async (): Promise<void> => {
@@ -71,6 +73,14 @@ export const loadAllSprites = async (): Promise<void> => {
       }
     }),
   );
+
+  const carrierImage = new Image();
+  carrierImage.src = carrierSprite;
+  await new Promise<void>((resolve, reject) => {
+    carrierImage.onload = () => resolve();
+    carrierImage.onerror = (error) => reject(error);
+  });
+  carrierBitmap = await createImageBitmap(carrierImage);
 };
 
 const getSpriteForUnit = (unitType: UnitType): ImageBitmap | null => {
@@ -141,13 +151,15 @@ export const getColoredSprite = (
     customTerritoryColor ?? theme.territoryColor(owner);
   const borderColor: Colord = customBorderColor ?? theme.borderColor(owner);
   const spawnHighlightColor = theme.spawnHighlightColor();
-  const key = `${unit.type()}-${owner.id()}-${territoryColor.toRgbString()}-${borderColor.toRgbString()}`;
+  const isCarrier = unit.type() === UnitType.Warship && unit.level() >= 4;
+  const variant = isCarrier ? "carrier" : "standard";
+  const key = `${unit.type()}-${variant}-${owner.id()}-${territoryColor.toRgbString()}-${borderColor.toRgbString()}`;
 
   if (coloredSpriteCache.has(key)) {
     return coloredSpriteCache.get(key)!;
   }
 
-  const sprite = getSpriteForUnit(unit.type());
+  const sprite = isCarrier ? carrierBitmap : getSpriteForUnit(unit.type());
   if (sprite === null) {
     throw new Error(`Failed to load sprite for ${unit.type()}`);
   }

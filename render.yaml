@@ -1,0 +1,18 @@
+services:
+  - type: web
+    name: terratomic-multiplayer
+    runtime: docker
+    plan: free
+    region: ohio
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /api/env
+    envVars:
+      - key: GAME_ENV
+        value: prod
+      - key: RENDER_FREE
+        value: "true"
+      - key: PORT
+        value: "10000"
+      - key: NODE_ENV
+        value: production

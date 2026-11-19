@@ -35,6 +35,12 @@ You're now ready to start developing locally. A formal contribution guide will b
 
 Until then, open issues, submit pull requests, or join the discussion [on Discord](https://discord.gg/JNZbp4pg5y) — we're listening.
 
+### Deploying a small multiplayer server on Render
+
+The included `render.yaml` creates a free Docker web service. In Render, create a Blueprint from this repository and deploy the `terratomic-multiplayer` service. The Render profile runs one game worker, uses a 200 ms game tick, and limits scheduled public lobbies to 16 players and 80 bots to fit the free instance's resource limits. Private lobbies are still available.
+
+Render free services can sleep after 15 minutes without inbound traffic, take about a minute to wake, and may restart at any time. Active multiplayer WebSocket traffic keeps the service awake, but games and local archives are in memory or on an ephemeral filesystem, so a restart ends active games and does not preserve local archive data. This setup is intended for hobby play and testing, not an always available public server.
+
 ---
 
 ## 🗂️ Project Structure

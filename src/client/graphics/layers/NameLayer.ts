@@ -25,7 +25,7 @@ import { GameView, PlayerView } from "../../../core/game/GameView";
 import { UserSettings } from "../../../core/game/UserSettings";
 import { PseudoRandom } from "../../../core/PseudoRandom";
 import { AlternateViewEvent } from "../../InputHandler";
-import { createCanvas, renderNumber, renderTroops } from "../../Utils";
+import { renderNumber, renderTroops } from "../../Utils";
 import { TransformHandler } from "../TransformHandler";
 import { Layer } from "./Layer";
 
@@ -61,7 +61,6 @@ class RenderInfo {
 
 export class NameLayer implements Layer {
   layerName = "NameLayer";
-  private canvas: HTMLCanvasElement;
   private lastChecked = 0;
   private renderCheckRate = 100;
   private renderRefreshRate = 500;
@@ -123,11 +122,6 @@ export class NameLayer implements Layer {
     this.doveIconImage.src = doveIcon;
   }
 
-  resizeCanvas() {
-    this.canvas.width = window.innerWidth;
-    this.canvas.height = window.innerHeight;
-  }
-
   shouldTransform(): boolean {
     return false;
   }
@@ -137,10 +131,6 @@ export class NameLayer implements Layer {
   }
 
   public init() {
-    this.canvas = createCanvas();
-    window.addEventListener("resize", () => this.resizeCanvas());
-    this.resizeCanvas();
-
     this.container = document.createElement("div");
     this.container.style.position = "fixed";
     this.container.style.left = "50%";
@@ -232,15 +222,17 @@ export class NameLayer implements Layer {
     }
   }
 
-  public renderLayer(mainContex: CanvasRenderingContext2D) {
-    const screenPosOld = this.transformHandler.worldToScreenCoordinates(
-      new Cell(0, 0),
-    );
-    const screenPos = new Cell(
-      screenPosOld.x - window.innerWidth / 2,
-      screenPosOld.y - window.innerHeight / 2,
-    );
-    this.container.style.transform = `translate(${screenPos.x}px, ${screenPos.y}px) scale(${this.transformHandler.scale})`;
+  public renderLayer() {
+    if (this.transformHandler.hasChanged()) {
+      const screenPosOld = this.transformHandler.worldToScreenCoordinates(
+        new Cell(0, 0),
+      );
+      const screenPos = new Cell(
+        screenPosOld.x - window.innerWidth / 2,
+        screenPosOld.y - window.innerHeight / 2,
+      );
+      this.container.style.transform = `translate(${screenPos.x}px, ${screenPos.y}px) scale(${this.transformHandler.scale})`;
+    }
 
     const now = Date.now();
     if (now > this.lastChecked + this.renderCheckRate) {
@@ -249,14 +241,6 @@ export class NameLayer implements Layer {
         this.renderPlayerInfo(render);
       }
     }
-
-    mainContex.drawImage(
-      this.canvas,
-      0,
-      0,
-      mainContex.canvas.width,
-      mainContex.canvas.height,
-    );
   }
 
   private createPlayerElement(player: PlayerView): HTMLDivElement {

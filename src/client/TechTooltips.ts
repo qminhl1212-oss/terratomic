@@ -18,14 +18,16 @@ export function getDetailedTechTooltip(techId: string): string {
     case RESEARCH_TECH_IDS.SEA_ADVANCED_FLEET: {
       const w3 = WARSHIP_UPGRADES[2];
       const s2 = SUBMARINE_UPGRADES[1];
-      return `Unlocks:\n• Gen 3 Warships (+20% health to ${w3.maxHealth}, +25.9% min damage to ${w3.damageMin}, +17.7% max damage to ${w3.damageMax})\n• Gen 2 Submarines (+25% health to ${s2.maxHealth}, +35% min damage to ${s2.damageMin}, +21.5% max damage to ${s2.damageMax})`;
+      return `Unlocks:\n• Aegis Destroyers (+20% health to ${w3.maxHealth}, +25.9% min damage to ${w3.damageMin}, +17.7% max damage to ${w3.damageMax})\n• Gen 2 Submarines (+25% health to ${s2.maxHealth}, +35% min damage to ${s2.damageMin}, +21.5% max damage to ${s2.damageMax})`;
     }
     case RESEARCH_TECH_IDS.SEA_NUCLEAR_SUBMARINES: {
       const s3 = SUBMARINE_UPGRADES[2];
       return `Unlocks:\n• Gen 3 Submarines (+20% health to ${s3.maxHealth}, +25.9% min damage to ${s3.damageMin}, +17.7% max damage to ${s3.damageMax})\n• Ship Anti-Air: Warships engage and destroy aircraft within range`;
     }
-    case RESEARCH_TECH_IDS.SEA_TBD_LEVEL4:
-      return `Unlocks:\n• Nuclear Subs: Enables submarines to launch nuclear weapons while submerged and undetected (second-strike capability)`;
+    case RESEARCH_TECH_IDS.SEA_TBD_LEVEL4: {
+      const carrier = WARSHIP_UPGRADES[3];
+      return `Unlocks:\n• Aircraft Carriers (${carrier.maxHealth} health, ${carrier.damageMin}-${carrier.damageMax} damage): Launch and support fighter wings; extended fleet air-defense range\n• Nuclear Subs: Enables submarines to launch nuclear weapons while submerged and undetected (second-strike capability)`;
+    }
 
     // --- LAND ---
     case RESEARCH_TECH_IDS.LAND_ROADS_HOSPITALS:

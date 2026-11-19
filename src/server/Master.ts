@@ -109,7 +109,7 @@ export async function startMaster() {
                 scheduleLobbies();
               }
             }),
-          100,
+          1000,
         );
       }
     }

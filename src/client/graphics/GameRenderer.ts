@@ -335,6 +335,8 @@ export function createRenderer(
 
 export class GameRenderer {
   private context: CanvasRenderingContext2D;
+  private backgroundColor: string;
+  private animationFrameId: number | null = null;
 
   constructor(
     private game: GameView,
@@ -344,9 +346,14 @@ export class GameRenderer {
     public uiState: UIState,
     private layers: Layer[],
   ) {
-    const context = canvas.getContext("2d");
+    // This canvas is always painted edge-to-edge with an opaque background,
+    // so the browser can skip alpha compositing.
+    const context = canvas.getContext("2d", {
+      alpha: false,
+    });
     if (context === null) throw new Error("2d context not supported");
     this.context = context;
+    this.backgroundColor = this.getBackgroundColor();
   }
 
   initialize() {
@@ -360,13 +367,18 @@ export class GameRenderer {
     //show whole map on startup
     this.transformHandler.centerAll(0.9);
 
-    let rafId = requestAnimationFrame(() => this.renderGame());
+    this.animationFrameId = requestAnimationFrame(() => this.renderGame());
     this.canvas.addEventListener("contextlost", () => {
-      cancelAnimationFrame(rafId);
+      if (this.animationFrameId !== null) {
+        cancelAnimationFrame(this.animationFrameId);
+        this.animationFrameId = null;
+      }
     });
     this.canvas.addEventListener("contextrestored", () => {
       this.redraw();
-      rafId = requestAnimationFrame(() => this.renderGame());
+      if (this.animationFrameId === null) {
+        this.animationFrameId = requestAnimationFrame(() => this.renderGame());
+      }
     });
   }
 
@@ -378,6 +390,7 @@ export class GameRenderer {
   }
 
   redraw() {
+    this.backgroundColor = this.getBackgroundColor();
     this.layers.forEach((l) => {
       if (l.redraw) {
         l.redraw();
@@ -386,21 +399,19 @@ export class GameRenderer {
   }
 
   renderGame() {
-    PerformanceMetrics.getInstance().resetVisibleCount();
-    const start = performance.now();
+    const metrics = PerformanceMetrics.getInstance();
+    metrics.resetVisibleCount();
+    const measureFrame = metrics.enabled;
+    const start = measureFrame ? performance.now() : 0;
     // Set background
-    this.context.fillStyle = this.game
-      .config()
-      .theme()
-      .backgroundColor()
-      .toHex();
+    this.context.fillStyle = this.backgroundColor;
     this.context.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
     // Render layers in order, switching transform state as needed
     let isTransformed = false;
 
     for (const layer of this.layers) {
-      const layerStart = performance.now();
+      const layerStart = measureFrame ? performance.now() : 0;
       const layerNeedsTransform = layer.shouldTransform?.() ?? false;
 
       if (layerNeedsTransform && !isTransformed) {
@@ -413,11 +424,12 @@ export class GameRenderer {
       }
 
       layer.renderLayer?.(this.context);
-      const layerEnd = performance.now();
-      PerformanceMetrics.getInstance().updateLayerDuration(
-        (layer as Layer).layerName ?? layer.constructor.name,
-        layerEnd - layerStart,
-      );
+      if (measureFrame) {
+        metrics.updateLayerDuration(
+          (layer as Layer).layerName ?? layer.constructor.name,
+          performance.now() - layerStart,
+        );
+      }
     }
 
     if (isTransformed) {
@@ -425,15 +437,21 @@ export class GameRenderer {
     }
     this.transformHandler.resetChanged();
 
-    requestAnimationFrame(() => this.renderGame());
+    this.animationFrameId = requestAnimationFrame(() => this.renderGame());
 
-    const duration = performance.now() - start;
-    PerformanceMetrics.getInstance().updateFrame(duration);
-    if (duration > 50) {
-      console.warn(
-        `tick ${this.game.ticks()} took ${duration}ms to render frame`,
-      );
+    if (measureFrame) {
+      const duration = performance.now() - start;
+      metrics.updateFrame(duration);
+      if (duration > 50) {
+        console.warn(
+          `tick ${this.game.ticks()} took ${duration}ms to render frame`,
+        );
+      }
     }
+  }
+
+  private getBackgroundColor(): string {
+    return this.game.config().theme().backgroundColor().toHex();
   }
 
   tick() {

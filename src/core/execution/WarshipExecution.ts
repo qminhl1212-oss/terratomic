@@ -517,10 +517,12 @@ export class WarshipExecution implements Execution {
       this.mg.ticks() + this.mg.config().warshipAAScanInterval();
 
     // Target Scan & Squared Distance: Use squared values to avoid expensive sqrt operations.
-    const rangeSq = this.mg.config().warshipAARange() ** 2;
+    const isCarrier = (this.warship.level?.() ?? 1) >= 4;
+    const aaRange = this.mg.config().warshipAARange() * (isCarrier ? 1.5 : 1);
+    const rangeSq = aaRange ** 2;
     const nearbyAircraft = this.mg.nearbyUnits(
       this.warship.tile(),
-      this.mg.config().warshipAARange(),
+      aaRange,
       [
         UnitType.Bomber,
         UnitType.FighterJet,
@@ -563,7 +565,7 @@ export class WarshipExecution implements Execution {
       }
 
       const healthPercent =
-        this.warship.health() / (this.warship.info().maxHealth ?? 1);
+        this.warship.health() / this.warship.effectiveMaxHealth();
       const hit =
         this.pseudoRandom.next() <
         this.mg.config().warshipAAHittingChance() * healthPercent;
@@ -582,7 +584,10 @@ export class WarshipExecution implements Execution {
       }
 
       this.nextAAMissileFireTick =
-        this.mg.ticks() + this.mg.config().warshipAACooldown();
+        this.mg.ticks() +
+        (isCarrier
+          ? Math.ceil(this.mg.config().warshipAACooldown() * 0.75)
+          : this.mg.config().warshipAACooldown());
     }
   }
 
