@@ -93,7 +93,9 @@ export class MapPlaylist {
       disableNPCs: mode === GameMode.Team,
       gameMode: mode,
       playerTeams,
-      bots: renderFree ? 80 : 400,
+      // Keep public games small enough to run alongside the master and worker
+      // processes within Render Free's memory limit.
+      bots: renderFree ? 8 : 400,
       peaceTimerDurationMinutes: PeaceTimerDuration.None,
       startingGold: 0,
       goldMultiplier: 1,
