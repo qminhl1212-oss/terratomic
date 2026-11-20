@@ -39,6 +39,7 @@ type GoldMultiplierOption = (typeof GoldMultiplierValues)[number];
 const goldMultiplierList = [...GoldMultiplierValues] as number[];
 const isGoldMultiplierOption = (value: number): value is GoldMultiplierOption =>
   goldMultiplierList.includes(value);
+const MAX_SINGLEPLAYER_BOTS = 64;
 
 @customElement("single-player-modal")
 export class SinglePlayerModal extends LitElement {
@@ -49,7 +50,7 @@ export class SinglePlayerModal extends LitElement {
   @state() private selectedMap: GameMapType = GameMapType.World;
   @state() private selectedDifficulty: Difficulty = Difficulty.Medium;
   @state() private disableNPCs: boolean = false;
-  @state() private bots: number = 400;
+  @state() private bots: number = 16;
   @state() private infiniteGold: boolean = false;
   @state() private infiniteTroops: boolean = false;
   @state() private instantBuild: boolean = false;
@@ -68,7 +69,7 @@ export class SinglePlayerModal extends LitElement {
 
   render() {
     // Calculate percentage for the CSS variable
-    const sliderPercent = (this.bots / 400) * 100;
+    const sliderPercent = (this.bots / MAX_SINGLEPLAYER_BOTS) * 100;
 
     return html`
       <style>
@@ -553,7 +554,7 @@ export class SinglePlayerModal extends LitElement {
                   <input
                     type="range"
                     min="0"
-                    max="400"
+                    max=${MAX_SINGLEPLAYER_BOTS}
                     step="1"
                     .value=${String(this.bots)}
                     @input=${this.handleBotsChange}
@@ -813,7 +814,7 @@ export class SinglePlayerModal extends LitElement {
 
   private handleBotsChange(e: Event) {
     const value = parseInt((e.target as HTMLInputElement).value);
-    if (isNaN(value) || value < 0 || value > 400) {
+    if (isNaN(value) || value < 0 || value > MAX_SINGLEPLAYER_BOTS) {
       return;
     }
     this.bots = value;

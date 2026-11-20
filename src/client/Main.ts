@@ -1,6 +1,9 @@
 import { EventBus } from "../core/EventBus";
 import { GameRecord, GameStartInfo, ID } from "../core/Schemas";
-import { getServerConfigFromClient } from "../core/configuration/ConfigLoader";
+import {
+  getServerConfigFromClient,
+  getServerConfigFromServer,
+} from "../core/configuration/ConfigLoader";
 import { GameType } from "../core/game/Game";
 import { UserSettings } from "../core/game/UserSettings";
 import { joinLobby } from "./ClientGameRunner";
@@ -522,7 +525,11 @@ class Client {
       console.log("joining lobby, stopping existing game");
       this.gameStop();
     }
-    const config = await getServerConfigFromClient();
+    const isSingleplayer =
+      lobby.gameStartInfo?.config.gameType === GameType.Singleplayer;
+    const config = isSingleplayer
+      ? getServerConfigFromServer()
+      : await getServerConfigFromClient();
 
     this.gameStop = joinLobby(
       this.eventBus,

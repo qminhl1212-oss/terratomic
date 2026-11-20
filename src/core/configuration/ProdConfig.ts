@@ -8,9 +8,9 @@ export const prodConfig = new (class extends DefaultServerConfig {
     return process.env.RENDER_FREE === "true" ? 1 : 20;
   }
   turnIntervalMs(): number {
-    // A lower tick rate reduces CPU use on the free instance while keeping
-    // the game responsive enough for casual multiplayer.
-    return process.env.RENDER_FREE === "true" ? 200 : super.turnIntervalMs();
+    // Keep Render Free's turn rate responsive while limiting lobby size and
+    // bots separately to control the total simulation load.
+    return process.env.RENDER_FREE === "true" ? 150 : super.turnIntervalMs();
   }
   env(): GameEnv {
     return GameEnv.Prod;

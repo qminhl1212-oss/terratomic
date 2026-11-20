@@ -35,11 +35,6 @@ const log = logger.child({ comp: `w_${workerId}` });
 export async function startWorker() {
   log.info(`Worker starting...`);
 
-  // Initialize ranking service on all workers
-  // - All workers can update rankings after games
-  // - Worker 0 serves API requests and reloads from R2 periodically
-  await rankingService.initialize(workerId === 0);
-
   const __filename = fileURLToPath(import.meta.url);
   const __dirname = path.dirname(__filename);
 
@@ -544,6 +539,12 @@ export async function startWorker() {
       });
       log.info(`signaled ready state to master`);
     }
+  });
+
+  // Rankings are optional for gameplay. Load them in the background so an
+  // unavailable R2 endpoint cannot prevent the worker from accepting lobbies.
+  void rankingService.initialize(workerId === 0).catch((error: unknown) => {
+    log.warn("Ranking service initialization failed", { error });
   });
 
   // Global error handler

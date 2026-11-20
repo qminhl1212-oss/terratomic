@@ -1,3 +1,4 @@
+import { GameType } from "../game/Game";
 import { UserSettings } from "../game/UserSettings";
 import { GameConfig } from "../Schemas";
 import { Config, GameEnv, ServerConfig } from "./Config";
@@ -13,7 +14,10 @@ export async function getConfig(
   userSettings: UserSettings | null,
   isReplay: boolean = false,
 ): Promise<Config> {
-  const sc = await getServerConfigFromClient();
+  const sc =
+    gameConfig.gameType === GameType.Singleplayer
+      ? getServerConfigFromServer()
+      : await getServerConfigFromClient();
   switch (sc.env()) {
     case GameEnv.Dev:
       return new DevConfig(sc, gameConfig, userSettings, isReplay);
