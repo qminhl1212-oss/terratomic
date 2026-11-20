@@ -84,7 +84,7 @@ export class MapPlaylist {
     // Create the default public game config (from your GameManager)
     return {
       gameMap: map,
-      maxPlayers: renderFree ? Math.min(maxPlayers, 16) : maxPlayers,
+      maxPlayers: renderFree ? Math.min(maxPlayers, 8) : maxPlayers,
       gameType: GameType.Public,
       difficulty: Difficulty.Medium,
       infiniteGold: false,
@@ -95,7 +95,7 @@ export class MapPlaylist {
       playerTeams,
       // Keep public games small enough to run alongside the master and worker
       // processes within Render Free's memory limit.
-      bots: renderFree ? 8 : 400,
+      bots: renderFree ? 0 : 400,
       peaceTimerDurationMinutes: PeaceTimerDuration.None,
       startingGold: 0,
       goldMultiplier: 1,

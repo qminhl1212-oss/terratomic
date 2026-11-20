@@ -116,7 +116,8 @@ export async function startWorker() {
       const gc = result.data;
       if (gc && process.env.RENDER_FREE === "true") {
         // Prevent large custom lobbies from exhausting the free instance's RAM.
-        gc.bots = Math.min(gc.bots, 8);
+        gc.bots = Math.min(gc.bots, 4);
+        gc.maxPlayers = Math.min(gc.maxPlayers ?? 8, 8);
       }
       if (
         gc?.gameType === GameType.Public &&
