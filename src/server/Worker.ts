@@ -114,7 +114,7 @@ export async function startWorker() {
       }
 
       const gc = result.data;
-      if (process.env.RENDER_FREE === "true") {
+      if (gc && process.env.RENDER_FREE === "true") {
         // Prevent large custom lobbies from exhausting the free instance's RAM.
         gc.bots = Math.min(gc.bots, 8);
       }
